@@ -14,6 +14,7 @@
 package com.tencent.sonic.demo;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.WebView;
 
 import com.tencent.sonic.sdk.SonicSessionClient;

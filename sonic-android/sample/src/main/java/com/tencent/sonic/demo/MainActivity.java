@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 SonicEngine.getInstance().cleanCache();
+
             }
         });
 

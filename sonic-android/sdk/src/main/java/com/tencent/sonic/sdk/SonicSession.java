@@ -537,8 +537,7 @@ public abstract class SonicSession implements Handler.Callback {
         statistics.sonicFlowStartTime = System.currentTimeMillis();
 
         String cacheHtml = null;
-        SonicDataHelper.SessionData sessionData;
-        sessionData = getSessionData(firstRequest);
+        final SonicDataHelper.SessionData sessionData = getSessionData(firstRequest);
 
         if (firstRequest) {
             cacheHtml = SonicCacheInterceptor.getSonicCacheData(this);
@@ -547,7 +546,7 @@ public abstract class SonicSession implements Handler.Callback {
             handleFlow_LoadLocalCache(cacheHtml); // local cache if exist before connection
         }
 
-        boolean hasHtmlCache = !TextUtils.isEmpty(cacheHtml) || !firstRequest;
+        final boolean hasHtmlCache = !TextUtils.isEmpty(cacheHtml) || !firstRequest;
 
         final SonicRuntime runtime = SonicEngine.getInstance().getRuntime();
         if (!runtime.isNetworkValid()) {
@@ -564,6 +563,11 @@ public abstract class SonicSession implements Handler.Callback {
             }
             SonicUtils.log(TAG, Log.ERROR, "session(" + sId + ") runSonicFlow error:network is not valid!");
         } else {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             handleFlow_Connection(hasHtmlCache, sessionData);
             statistics.connectionFlowFinishTime = System.currentTimeMillis();
         }
@@ -658,6 +662,7 @@ public abstract class SonicSession implements Handler.Callback {
      */
     protected void handleFlow_Connection(boolean hasCache, SonicDataHelper.SessionData sessionData) {
         // create connection for current session
+
         statistics.connectionFlowStartTime = System.currentTimeMillis();
 
         if (config.SUPPORT_CACHE_CONTROL && statistics.connectionFlowStartTime < sessionData.expiredTime) {

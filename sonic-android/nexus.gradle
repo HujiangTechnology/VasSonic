@@ -1,0 +1,65 @@
+apply plugin: 'maven'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+def NEXUS_RELEASES = properties.getProperty("NEXUS_RELEASES")
+def NEXUS_SNAPSHOTS = properties.getProperty("NEXUS_SNAPSHOTS")
+def NEXUS_USERNAME = properties.getProperty("NEXUS_USERNAME")
+def NEXUS_PASSWORD = properties.getProperty("NEXUS_PASSWORD")
+
+version=LIB_VERSION
+def nexusRepositoryUrl = NEXUS_RELEASES
+
+if (!LIB_IS_RELEASE.toBoolean()){
+    version = "${version}-SNAPSHOT"
+    nexusRepositoryUrl = NEXUS_SNAPSHOTS
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.sourceFiles
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+    options {
+        failOnError false
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "$nexusRepositoryUrl") {
+                authentication(userName: NEXUS_USERNAME, password: NEXUS_PASSWORD)
+            }
+
+            pom.project {
+                name LIB_ARTIFACT
+                groupId LIB_GROUP
+                artifactId LIB_ARTIFACT
+                version version
+                packaging 'aar'
+                description LIB_DES
+            }
+        }
+    }
+}
